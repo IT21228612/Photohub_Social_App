@@ -1,36 +1,59 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import PostCard from "./PostCard";
+import CreatePostModal from "./CreatePostModal";
+import { PlusIcon, ArrowUpIcon } from "@heroicons/react/24/solid";
 
 const PostsWall = () => {
   const [posts, setPosts] = useState([]);
-
-  const currentUser = {
-    id: 'user123',
-    name: 'John Doe',
-    email: 'john@example.com',
-  };
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/all`);
-        setPosts(response.data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
-
-    fetchPosts();
+    axios
+      .get(`${process.env.REACT_APP_API_URL}/posts/all`)
+      .then((res) => setPosts(res.data))
+      .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollButton(window.scrollY > 150);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6">
+      <div className="max-w-6xl mx-auto relative mb-6">
+        <button
+          onClick={() => setShowModal(true)}
+          className="absolute top-0 right-0 flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-full shadow-xl transform hover:-translate-y-1 transition"
+        >
+          <PlusIcon className="h-6 w-6" />
+          <span className="font-semibold">New Post</span>
+        </button>
+      </div>
+
+      <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6 pt-12">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
+
+      {showScrollButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-xl hover:-translate-y-1 transition"
+        >
+          <ArrowUpIcon className="h-6 w-6" />
+        </button>
+      )}
+
+      {showModal && (
+        <CreatePostModal closeModal={() => setShowModal(false)} setPosts={setPosts} />
+      )}
     </div>
   );
 };
