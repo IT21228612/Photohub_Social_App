@@ -1,16 +1,16 @@
-# Compiled class file
+# === Java related ===
 *.class
 
-# Log file
+# === Log files ===
 *.log
 
-# BlueJ files
+# === BlueJ files ===
 *.ctxt
 
-# Mobile Tools for Java (J2ME)
+# === Mobile Tools for Java (J2ME) ===
 .mtj.tmp/
 
-# Package Files #
+# === Package files ===
 *.jar
 *.war
 *.nar
@@ -19,6 +19,30 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# === JVM crash logs ===
 hs_err_pid*
 replay_pid*
+
+# === Maven / Gradle ===
+target/
+build/
+
+# === IDE specific ===
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# === Operating System files ===
+.DS_Store
+Thumbs.db
+
+# === Uploads folder ===
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Ignore application.properties for security
+backend/src/main/resources/*
+
+backend/src/main/resources/application.properties
