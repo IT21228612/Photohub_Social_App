@@ -4,10 +4,12 @@ import {
   EllipsisVerticalIcon,
   PencilIcon,
   TrashIcon,
+  PlayIcon,
 } from "@heroicons/react/24/outline";
 import { Popover } from "@headlessui/react";
 import Lightbox from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
 
 const PostCard = ({ post }) => {
@@ -23,7 +25,6 @@ const PostCard = ({ post }) => {
 
   const isVideoFile = (url) => url.match(/\.(mp4|mov|avi|webm)$/i);
 
-  // Build slides array for Lightbox
   const slides = (post.mediaIds || []).map((mediaId) => {
     const url = `${process.env.REACT_APP_API_URL}/posts/media/${mediaId}`;
     if (isVideoFile(url)) {
@@ -51,12 +52,18 @@ const PostCard = ({ post }) => {
         onClick={() => handleMediaClick(idx)}
       >
         {video ? (
-          <video
-            src={url}
-            className="w-full h-full object-cover rounded-md"
-            muted
-            preload="metadata"
-          />
+          <>
+            <video
+              src={url}
+              className="w-full h-full object-cover rounded-md"
+              muted
+              preload="metadata"
+            />
+            {/* Play Icon Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+              <PlayIcon className="h-12 w-12 text-white" />
+            </div>
+          </>
         ) : (
           <img
             src={url}
@@ -69,7 +76,7 @@ const PostCard = ({ post }) => {
   };
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden ">
       {currentUser.id === post.userId && (
         <Popover className="absolute top-2 right-2">
           <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
@@ -109,11 +116,15 @@ const PostCard = ({ post }) => {
               }`}
             >
               {post.mediaIds.slice(0, 4).map((id, i) => (
-                <div key={i} className="relative">
+                <div
+                  key={i}
+                  className="relative cursor-pointer"
+                  onClick={() => handleMediaClick(i)}
+                >
                   {renderThumb(id, i)}
                   {i === 3 && post.mediaIds.length > 4 && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-md flex items-center justify-center">
-                      <span className="text-white text-lg font-semibold">
+                      <span className="text-white text-5xl font-semibold">
                         +{post.mediaIds.length - 4} more
                       </span>
                     </div>
@@ -131,7 +142,14 @@ const PostCard = ({ post }) => {
           close={() => setOpenViewer(false)}
           index={viewerIndex}
           slides={slides}
-          plugins={[Video]}
+          plugins={[Video, Zoom]}
+          zoom={{
+            maxZoomPixelRatio: 5,
+            zoomInMultiplier: 2,
+            doubleTapDelay: 300,
+            doubleClickDelay: 300,
+            scrollToZoom: true,
+          }}
           styles={{ container: { backgroundColor: "rgba(0,0,0,0.9)" } }}
         />
       )}
