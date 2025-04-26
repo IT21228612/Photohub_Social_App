@@ -3,18 +3,16 @@ package com.example.backend.controller;
 import com.example.backend.model.Post;
 import com.example.backend.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -23,23 +21,24 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    // Create a new post
     @PostMapping("/create")
-    public Post createPost(
+    public ResponseEntity<Post> createPost(
             @RequestParam("userId") String userId,
             @RequestParam("description") String description,
             @RequestParam("files") List<MultipartFile> files) throws IOException {
-        return postService.createPost(userId, description, files);
+        Post post = postService.createPost(userId, description, files);
+        return ResponseEntity.status(201).body(post);
     }
 
-    // Endpoint to get a specific post by userId and postId
+    // Get a specific post
     @GetMapping("/{userId}/{postId}")
     public ResponseEntity<Post> getPost(@PathVariable String userId, @PathVariable String postId) {
-        Optional<Post> post = postService.getPostById(userId, postId);
-        return post.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        Post post = postService.getPostById(userId, postId);
+        return ResponseEntity.ok(post);
     }
 
-    // Endpoint to get all posts for a specific userId
+    // Get all posts for a user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Post>> getAllPostsForUser(@PathVariable String userId) {
         List<Post> posts = postService.getPostsByUserId(userId);
@@ -49,7 +48,7 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    // Endpoint to Update Post with optional new files and media deletions
+    // Update a post
     @PutMapping("/{userId}/{postId}")
     public ResponseEntity<Post> updatePost(
             @PathVariable String userId,
@@ -57,23 +56,18 @@ public class PostController {
             @RequestParam(required = false) String description,
             @RequestParam(required = false) List<String> toBeDeletedMediaIds,
             @RequestParam(required = false) List<MultipartFile> newFiles) throws IOException {
-
         Post updatedPost = postService.updatePost(userId, postId, description, toBeDeletedMediaIds, newFiles);
-        if (updatedPost == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(updatedPost);
     }
 
-    // Endpoint to get media files
+    // Get a media file
     @GetMapping("/media/{filename:.+}")
     public ResponseEntity<Resource> getMedia(@PathVariable String filename) throws IOException {
         Resource file = postService.getMediaFile(filename);
 
         String contentType = Files.probeContentType(file.getFile().toPath());
         if (contentType == null) {
-            contentType = "application/octet-stream"; // Default content type for unknown files
+            contentType = "application/octet-stream";
         }
 
         return ResponseEntity.ok()
@@ -82,16 +76,10 @@ public class PostController {
                 .body(file);
     }
 
-    // Delete a specific post by userId and postId
+    // Delete a post
     @DeleteMapping("/{userId}/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable String userId, @PathVariable String postId) {
-        boolean deleted = postService.deletePost(userId, postId);
-
-        if (deleted) {
-            return ResponseEntity.noContent().build(); // Successfully deleted
-        } else {
-            return ResponseEntity.notFound().build(); // Post not found or doesn't belong to the user
-        }
+    public ResponseEntity<String> deletePost(@PathVariable String userId, @PathVariable String postId) {
+        String message = postService.deletePost(userId, postId);
+        return ResponseEntity.ok(message);
     }
-
 }
