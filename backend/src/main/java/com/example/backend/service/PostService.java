@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class PostService {
@@ -47,9 +47,14 @@ public class PostService {
         List<String> mediaIds = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-                String safeFileName = originalFileName.replaceAll("\\s+", "_");
+            if (file != null && !file.isEmpty()) {
+                String originalFileName = file.getOriginalFilename();
+                if (originalFileName == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name is missing");
+                }
+
+                String safeFileName = StringUtils.cleanPath(originalFileName);
+                safeFileName = safeFileName.replaceAll("\\s+", "_"); // Replace spaces with underscores
                 String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
                 String fileName = timestamp + "_" + safeFileName;
 
@@ -106,9 +111,14 @@ public class PostService {
             List<String> currentMedia = new ArrayList<>(post.getMediaIds());
 
             for (MultipartFile file : newFiles) {
-                if (!file.isEmpty()) {
-                    String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-                    String safeFileName = originalFileName.replaceAll("\\s+", "_");
+                if (file != null && !file.isEmpty()) {
+                    String originalFileName = file.getOriginalFilename();
+                    if (originalFileName == null) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name is missing");
+                    }
+
+                    String safeFileName = StringUtils.cleanPath(originalFileName);
+                    safeFileName = safeFileName.replaceAll("\\s+", "_"); // Replace spaces with underscores
                     String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
                     String fileName = timestamp + "_" + safeFileName;
 
@@ -163,5 +173,4 @@ public class PostService {
     public List<Post> getAllPosts() {
         return postRepository.findAll();
     }
-
 }
