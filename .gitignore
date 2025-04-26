@@ -42,7 +42,10 @@ Thumbs.db
 backend/uploads/*
 !backend/uploads/.gitkeep
 
-# Ignore application.properties for security
-backend/src/main/resources/*
-
+# === Ignore application.properties for security ===
 backend/src/main/resources/application.properties
+
+
+# === Ignore node modules ===
+
+frontend/node_modules/*
