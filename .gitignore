@@ -47,5 +47,6 @@ backend/src/main/resources/application.properties
 
 
 # === Ignore node modules ===
-
 frontend/node_modules/*
+
+.env

@@ -7,9 +7,9 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 // User - Item Display, Order
-import UserItems from "./components/Items";
+import PostsWall from "./components/PostsWall";
 
-import UserItemsRport from "./components/ItemsReport";
+
 
 function App() {
     return (
@@ -22,8 +22,8 @@ function App() {
                 <main className="flex-grow p-4">
                     <Routes>
                         {/* User - Viewing Items */}
-                        <Route path="/inventory" element={<UserItems />} />
-                        <Route path="/inventoryReport" element={<UserItemsRport />} />
+                        <Route path="/inventory" element={<PostsWall />} />
+                       
                     </Routes>
                 </main>
 

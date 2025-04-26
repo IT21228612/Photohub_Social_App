@@ -82,4 +82,14 @@ public class PostController {
         String message = postService.deletePost(userId, postId);
         return ResponseEntity.ok(message);
     }
+
+    // Get all posts (regardless of user)
+    @GetMapping("/all")
+    public ResponseEntity<List<Post>> getAllPosts() {
+        List<Post> posts = postService.getAllPosts();
+        if (posts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(posts);
+    }
 }

@@ -21,7 +21,8 @@
     "react-select": "^5.10.1",
     "react-to-print": "^2.15.1",
     "sweetalert2": "^11.17.2",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yet-another-react-lightbox": "^3.23.0"
   },
   "scripts": {
     "start": "react-scripts start",

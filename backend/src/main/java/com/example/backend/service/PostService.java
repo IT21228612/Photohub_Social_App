@@ -78,7 +78,7 @@ public class PostService {
 
     // Update post details including media files
     public Post updatePost(String userId, String postId, String description, List<String> toBeDeletedMediaIds,
-                           List<MultipartFile> newFiles) throws IOException {
+            List<MultipartFile> newFiles) throws IOException {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
@@ -158,4 +158,10 @@ public class PostService {
         postRepository.delete(post);
         return "Post deleted successfully";
     }
+
+    // Retrieve all posts (regardless of user)
+    public List<Post> getAllPosts() {
+        return postRepository.findAll();
+    }
+
 }

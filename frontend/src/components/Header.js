@@ -49,7 +49,7 @@ export default function Header() {
           {/* Inventory Menu with Dropdown */}
           <Popover className="relative">
             <PopoverButton className="flex items-center gap-x-1 text-sm font-semibold text-gray-900">
-              Inventory
+              My
               <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400" />
             </PopoverButton>
             <PopoverPanel className="absolute top-full left-0 z-10 mt-3 w-40 rounded-md bg-white shadow-lg ring-1 ring-gray-900/5">
@@ -58,7 +58,7 @@ export default function Header() {
                   Report
                 </Link>
                 <Link to="/inventory" className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 rounded-md">
-                  My Inventory
+                  Wall
                 </Link>
               </div>
             </PopoverPanel>
