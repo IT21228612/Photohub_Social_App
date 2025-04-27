@@ -12,12 +12,14 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
 import DeletePostModal from "./DeletePostModal"; // Import your modal here
+import Edit_LP_PostModal from "./Edit_LP_PostModal";     // <-- Import Edit_LP_PostModal
 
 const LP_PostCard = ({ post }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // <-- New
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false); // <-- New state
 
   const ProfilePic = UserCircleIcon;
   const currentUser = {
@@ -143,20 +145,33 @@ const LP_PostCard = ({ post }) => {
     <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
       {currentUser.id === post.userId && (
         <Popover className="absolute top-2 right-2">
-          <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
-            <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
-          </Popover.Button>
-          <Popover.Panel className="absolute right-0 mt-2 w-32 bg-white border rounded-md shadow-lg z-10">
-            <button className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100">
-              <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
-            </button>
-            <button
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-              onClick={() => setShowDeleteModal(true)} // <-- open delete modal
-            >
-              <TrashIcon className="h-5 w-5 text-red-600" /> Delete
-            </button>
-          </Popover.Panel>
+          {({ close }) => (
+            <>
+              <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
+                <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
+              </Popover.Button>
+              <Popover.Panel className="absolute right-0 mt-2 w-32 bg-white border rounded-md shadow-lg z-10">
+                <button
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    setShowEditModal(true); // open edit modal
+                    close();              // close popover
+                  }}
+                >
+                  <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  onClick={() => {
+                    setShowDeleteModal(true); // open delete modal
+                    close();                  // close popover
+                  }}
+                >
+                  <TrashIcon className="h-5 w-5 text-red-600" /> Delete
+                </button>
+              </Popover.Panel>
+            </>
+          )}
         </Popover>
       )}
 
@@ -191,7 +206,9 @@ const LP_PostCard = ({ post }) => {
         )}
 
         <div
-          className={`text-gray-800 text-sm mb-2 ${!isExpanded ? "line-clamp-5" : ""}`}
+          className={`text-gray-800 text-sm mb-2 ${
+            !isExpanded ? "line-clamp-5" : ""
+          }`}
           style={{ whiteSpace: "pre-wrap" }}
         >
           {post.description}
@@ -208,7 +225,7 @@ const LP_PostCard = ({ post }) => {
           </div>
         )}
 
-        {post.resources && post.resources.length > 0 && renderResources(post.resources)}
+        {post.resources && renderResources(post.resources)}
         {post.challenges && renderChallenges(post.challenges)}
         {post.nextGoal && renderNextGoal(post.nextGoal)}
 
@@ -263,6 +280,14 @@ const LP_PostCard = ({ post }) => {
           postId={post.id}
           userId={currentUser.id}
           onClose={() => setShowDeleteModal(false)}
+        />
+      )}
+
+      {showEditModal && (
+        <Edit_LP_PostModal
+          postId={post.id}         // pass postId
+          userId={currentUser.id}   // pass currentUserId
+          onClose={() => setShowEditModal(false)}
         />
       )}
     </div>

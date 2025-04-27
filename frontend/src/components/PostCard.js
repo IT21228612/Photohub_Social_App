@@ -11,13 +11,15 @@ import Lightbox from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
-import DeletePostModal from "./DeletePostModal"; // Import DeletePostModal component
+import DeletePostModal from "./DeletePostModal"; // Import DeletePostModal
+import EditPostModal from "./EditPostModal"; // Import EditPostModal (new)
 
 const PostCard = ({ post }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for showing delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false); // New state for Edit Modal
 
   const ProfilePic = UserCircleIcon;
   const currentUser = {
@@ -26,7 +28,6 @@ const PostCard = ({ post }) => {
     email: "john@example.com",
   };
 
-  // Check if the URL is a video
   const isVideoFile = (url) => url.match(/\.(mp4|mov|avi|webm)$/i);
 
   const slides = (post.mediaIds || []).map((mediaId) => {
@@ -63,7 +64,6 @@ const PostCard = ({ post }) => {
               muted
               preload="metadata"
             />
-            {/* Play Icon Overlay */}
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
               <PlayIcon className="h-12 w-12 text-white" />
             </div>
@@ -82,23 +82,36 @@ const PostCard = ({ post }) => {
   const skillArray = post.skill ? post.skill.split(",") : [];
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden ">
+    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
       {currentUser.id === post.userId && (
         <Popover className="absolute top-2 right-2">
-          <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
-            <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
-          </Popover.Button>
-          <Popover.Panel className="absolute right-0 mt-2 w-32 bg-white border rounded-md shadow-lg z-10">
-            <button className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100">
-              <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
-            </button>
-            <button
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-              onClick={() => setShowDeleteModal(true)} // Show delete modal when clicked
-            >
-              <TrashIcon className="h-5 w-5 text-red-600" /> Delete
-            </button>
-          </Popover.Panel>
+          {({ close }) => (
+            <>
+              <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
+                <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
+              </Popover.Button>
+              <Popover.Panel className="absolute right-0 mt-2 w-32 bg-white border rounded-md shadow-lg z-10">
+                <button
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    setShowEditModal(true); // Open Edit Modal
+                    close(); // Close the popover
+                  }}
+                >
+                  <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  onClick={() => {
+                    setShowDeleteModal(true); // Open Delete Modal
+                    close(); // Close the popover
+                  }}
+                >
+                  <TrashIcon className="h-5 w-5 text-red-600" /> Delete
+                </button>
+              </Popover.Panel>
+            </>
+          )}
         </Popover>
       )}
 
@@ -134,15 +147,15 @@ const PostCard = ({ post }) => {
           </div>
         )}
 
-        {/* Description (Smaller text and preserving spaces/line breaks) */}
+        {/* Description */}
         <div
           className={`text-gray-800 text-sm mb-2 ${!isExpanded ? "line-clamp-5" : ""}`}
-          style={{ whiteSpace: "pre-wrap" }} // This ensures that line breaks and spaces are preserved
+          style={{ whiteSpace: "pre-wrap" }}
         >
           {post.description}
         </div>
 
-        {/* Toggle See More / Show Less */}
+        {/* See More / Show Less */}
         {post.description.length > 100 && (
           <div className="text-left">
             <button
@@ -154,6 +167,7 @@ const PostCard = ({ post }) => {
           </div>
         )}
 
+        {/* Media Thumbnails */}
         {post.mediaIds && post.mediaIds.length > 0 && (
           <div className="grid gap-2 mb-2">
             <div
@@ -180,6 +194,7 @@ const PostCard = ({ post }) => {
         )}
       </div>
 
+      {/* Lightbox Viewer */}
       {openViewer && (
         <Lightbox
           open={openViewer}
@@ -198,12 +213,21 @@ const PostCard = ({ post }) => {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Post Modal */}
       {showDeleteModal && (
         <DeletePostModal
           postId={post.id}
           userId={currentUser.id}
           onClose={() => setShowDeleteModal(false)}
+        />
+      )}
+
+      {/* Edit Post Modal */}
+      {showEditModal && (
+        <EditPostModal
+          postId={post.id}  // Pass only postId
+          userId={currentUser.id}  // Pass currentUserId
+          onClose={() => setShowEditModal(false)}
         />
       )}
     </div>
