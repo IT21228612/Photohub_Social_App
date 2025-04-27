@@ -7,7 +7,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -18,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Service
 public class PostService {
@@ -31,7 +29,6 @@ public class PostService {
 
     private Path uploadPath;
 
-    // Initialize upload directory after bean creation
     @PostConstruct
     public void init() {
         try {
@@ -42,48 +39,47 @@ public class PostService {
         }
     }
 
-    // Create a new post with optional media files
-    public Post createPost(String userId, String description, List<MultipartFile> files) throws IOException {
+    // Create a new post
+    public Post createPost(String userId, String title, String description, String skill, List<String> resources,
+                           String challenges, String nextGoal, int postType, List<MultipartFile> files) throws IOException {
         List<String> mediaIds = new ArrayList<>();
 
-        for (MultipartFile file : files) {
-            if (file != null && !file.isEmpty()) {
-                String originalFileName = file.getOriginalFilename();
-                if (originalFileName == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name is missing");
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFileName = file.getOriginalFilename();
+                    if (originalFileName == null) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name cannot be null");
+                    }
+                    String safeFileName = originalFileName.replaceAll("\\s+", "_");
+                    String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+                    String fileName = timestamp + "_" + safeFileName;
+
+                    Path targetLocation = uploadPath.resolve(fileName);
+                    Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+                    mediaIds.add(fileName);
                 }
-
-                String safeFileName = StringUtils.cleanPath(originalFileName);
-                safeFileName = safeFileName.replaceAll("\\s+", "_"); // Replace spaces with underscores
-                String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-                String fileName = timestamp + "_" + safeFileName;
-
-                Path targetLocation = uploadPath.resolve(fileName);
-                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-                mediaIds.add(fileName);
             }
         }
 
-        Post post = new Post(userId, description, mediaIds);
+        Post post = new Post(userId, title, description, skill, mediaIds, resources, challenges, nextGoal, postType);
         return postRepository.save(post);
     }
 
-    // Retrieve a specific post by userId and postId
     public Post getPostById(String userId, String postId) {
         return postRepository.findById(postId)
                 .filter(post -> post.getUserId().equals(userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found for the user"));
     }
 
-    // Retrieve all posts for a specific user
     public List<Post> getPostsByUserId(String userId) {
         return postRepository.findByUserId(userId);
     }
 
-    // Update post details including media files
-    public Post updatePost(String userId, String postId, String description, List<String> toBeDeletedMediaIds,
-            List<MultipartFile> newFiles) throws IOException {
+    public Post updatePost(String userId, String postId, String title, String description, String skill, List<String> resources,
+                           String challenges, String nextGoal, Integer postType, List<String> toBeDeletedMediaIds,
+                           List<MultipartFile> newFiles) throws IOException {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
@@ -91,11 +87,14 @@ public class PostService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to update this post");
         }
 
-        if (description != null) {
-            post.setDescription(description);
-        }
+        if (title != null) post.setTitle(title);
+        if (description != null) post.setDescription(description);
+        if (skill != null) post.setSkill(skill);
+        if (resources != null) post.setResources(resources);
+        if (challenges != null) post.setChallenges(challenges);
+        if (nextGoal != null) post.setNextGoal(nextGoal);
+        if (postType != null) post.setPostType(postType);
 
-        // Handle media deletion
         if (toBeDeletedMediaIds != null && !toBeDeletedMediaIds.isEmpty()) {
             List<String> currentMedia = new ArrayList<>(post.getMediaIds());
             for (String mediaId : toBeDeletedMediaIds) {
@@ -106,19 +105,15 @@ public class PostService {
             post.setMediaIds(currentMedia);
         }
 
-        // Handle adding new media files
         if (newFiles != null && !newFiles.isEmpty()) {
             List<String> currentMedia = new ArrayList<>(post.getMediaIds());
-
             for (MultipartFile file : newFiles) {
-                if (file != null && !file.isEmpty()) {
+                if (!file.isEmpty()) {
                     String originalFileName = file.getOriginalFilename();
                     if (originalFileName == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name is missing");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name cannot be null");
                     }
-
-                    String safeFileName = StringUtils.cleanPath(originalFileName);
-                    safeFileName = safeFileName.replaceAll("\\s+", "_"); // Replace spaces with underscores
+                    String safeFileName = originalFileName.replaceAll("\\s+", "_");
                     String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
                     String fileName = timestamp + "_" + safeFileName;
 
@@ -134,7 +129,6 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    // Fetch a media file by its filename
     public Resource getMediaFile(String filename) throws IOException {
         Path filePath = uploadPath.resolve(filename).normalize();
         Resource resource = new UrlResource(filePath.toUri());
@@ -146,7 +140,6 @@ public class PostService {
         }
     }
 
-    // Delete a post and its associated media files
     public String deletePost(String userId, String postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
@@ -155,7 +148,6 @@ public class PostService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this post");
         }
 
-        // Delete media files
         for (String mediaId : post.getMediaIds()) {
             Path filePath = uploadPath.resolve(mediaId).normalize();
             try {
@@ -169,7 +161,6 @@ public class PostService {
         return "Post deleted successfully";
     }
 
-    // Retrieve all posts (regardless of user)
     public List<Post> getAllPosts() {
         return postRepository.findAll();
     }

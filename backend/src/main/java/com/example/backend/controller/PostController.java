@@ -21,24 +21,28 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    // Create a new post
     @PostMapping("/create")
     public ResponseEntity<Post> createPost(
             @RequestParam("userId") String userId,
+            @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam("files") List<MultipartFile> files) throws IOException {
-        Post post = postService.createPost(userId, description, files);
+            @RequestParam(value = "skill", required = false) String skill,
+            @RequestParam(value = "resources", required = false) List<String> resources,
+            @RequestParam(value = "challenges", required = false) String challenges,
+            @RequestParam(value = "nextGoal", required = false) String nextGoal,
+            @RequestParam(value = "postType", required = false, defaultValue = "0") int postType,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files
+    ) throws IOException {
+        Post post = postService.createPost(userId, title, description, skill, resources, challenges, nextGoal, postType, files);
         return ResponseEntity.status(201).body(post);
     }
 
-    // Get a specific post
     @GetMapping("/{userId}/{postId}")
     public ResponseEntity<Post> getPost(@PathVariable String userId, @PathVariable String postId) {
         Post post = postService.getPostById(userId, postId);
         return ResponseEntity.ok(post);
     }
 
-    // Get all posts for a user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Post>> getAllPostsForUser(@PathVariable String userId) {
         List<Post> posts = postService.getPostsByUserId(userId);
@@ -48,19 +52,24 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    // Update a post
     @PutMapping("/{userId}/{postId}")
     public ResponseEntity<Post> updatePost(
             @PathVariable String userId,
             @PathVariable String postId,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) List<String> toBeDeletedMediaIds,
-            @RequestParam(required = false) List<MultipartFile> newFiles) throws IOException {
-        Post updatedPost = postService.updatePost(userId, postId, description, toBeDeletedMediaIds, newFiles);
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "skill", required = false) String skill,
+            @RequestParam(value = "resources", required = false) List<String> resources,
+            @RequestParam(value = "challenges", required = false) String challenges,
+            @RequestParam(value = "nextGoal", required = false) String nextGoal,
+            @RequestParam(value = "postType", required = false) Integer postType,
+            @RequestParam(value = "toBeDeletedMediaIds", required = false) List<String> toBeDeletedMediaIds,
+            @RequestParam(value = "newFiles", required = false) List<MultipartFile> newFiles
+    ) throws IOException {
+        Post updatedPost = postService.updatePost(userId, postId, title, description, skill, resources, challenges, nextGoal, postType, toBeDeletedMediaIds, newFiles);
         return ResponseEntity.ok(updatedPost);
     }
 
-    // Get a media file
     @GetMapping("/media/{filename:.+}")
     public ResponseEntity<Resource> getMedia(@PathVariable String filename) throws IOException {
         Resource file = postService.getMediaFile(filename);
@@ -76,14 +85,12 @@ public class PostController {
                 .body(file);
     }
 
-    // Delete a post
     @DeleteMapping("/{userId}/{postId}")
     public ResponseEntity<String> deletePost(@PathVariable String userId, @PathVariable String postId) {
         String message = postService.deletePost(userId, postId);
         return ResponseEntity.ok(message);
     }
 
-    // Get all posts (regardless of user)
     @GetMapping("/all")
     public ResponseEntity<List<Post>> getAllPosts() {
         List<Post> posts = postService.getAllPosts();

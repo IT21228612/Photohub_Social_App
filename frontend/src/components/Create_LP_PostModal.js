@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import { XCircleIcon } from "@heroicons/react/24/solid";
 import Select from "react-select"; // Import react-select
 
-const CreatePostModal = ({ closeModal, setPosts }) => {
+const Create_LP_PostModal = ({ closeModal, setPosts }) => {
   const [title, setTitle] = useState(""); // State for the title
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState([]);
@@ -259,4 +259,4 @@ const CreatePostModal = ({ closeModal, setPosts }) => {
   );
 };
 
-export default CreatePostModal;
+export default Create_LP_PostModal;

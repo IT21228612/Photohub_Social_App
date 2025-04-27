@@ -12,7 +12,7 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
 
-const PostCard = ({ post }) => {
+const LP_PostCard = ({ post }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -79,6 +79,44 @@ const PostCard = ({ post }) => {
 
   // Split the skill string into an array and render each skill as a tag
   const skillArray = post.skill ? post.skill.split(",") : [];
+
+  // Render Resources as a list of clickable links
+  const renderResources = (resources) => {
+    return (
+      <div className="mb-2">
+        <div className="font-semibold text-gray-800">Resources</div>
+        <ul className="list-disc pl-5 text-gray-700">
+          {resources.map((resource, idx) => (
+            <li key={idx}>
+              <a href={resource} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                {resource}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  // Render Challenges faced
+  const renderChallenges = (challenges) => {
+    return (
+      <div className="mb-2">
+        <div className="font-semibold text-gray-800">Challenges Faced</div>
+        <p className="text-gray-700">{challenges}</p>
+      </div>
+    );
+  };
+
+  // Render Next Goal
+  const renderNextGoal = (nextGoal) => {
+    return (
+      <div className="mb-2">
+        <div className="font-semibold text-gray-800">Next Learning Goal</div>
+        <p className="text-gray-700">{nextGoal}</p>
+      </div>
+    );
+  };
 
   return (
     <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden ">
@@ -150,12 +188,20 @@ const PostCard = ({ post }) => {
           </div>
         )}
 
+        {/* Resources Section */}
+        {post.resources && post.resources.length > 0 && renderResources(post.resources)}
+
+        {/* Challenges Section */}
+        {post.challenges && renderChallenges(post.challenges)}
+
+        {/* Next Goal Section */}
+        {post.nextGoal && renderNextGoal(post.nextGoal)}
+
+        {/* Media (Images/Videos) */}
         {post.mediaIds && post.mediaIds.length > 0 && (
           <div className="grid gap-2 mb-2">
             <div
-              className={`grid gap-2 ${
-                post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              }`}
+              className={`grid gap-2 ${post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
             >
               {post.mediaIds.slice(0, 4).map((id, i) => (
                 <div
@@ -199,4 +245,4 @@ const PostCard = ({ post }) => {
   );
 };
 
-export default PostCard;
+export default LP_PostCard;

@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import PostCard from "./PostCard";
 import CreatePostModal from "./CreatePostModal";
+import Create_LP_PostModal from "./Create_LP_PostModal"; // Import the new LP Post Modal
 import { PlusIcon, ArrowUpIcon } from "@heroicons/react/24/solid";
+import LP_PostCard from "./LP_PostCard";
 
 const PostsWall = () => {
   const [posts, setPosts] = useState([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showLPModal, setShowLPModal] = useState(false); // New state for LP Post Modal
 
   useEffect(() => {
     axios
@@ -34,12 +37,25 @@ const PostsWall = () => {
           <PlusIcon className="h-6 w-6" />
           <span className="font-semibold">New Post</span>
         </button>
+        
+        {/* Share Progress Button */}
+        <button
+          onClick={() => setShowLPModal(true)} // Open the LP Post Modal
+          className="absolute top-0 right-40 flex items-center gap-2 bg-green-600 text-white px-5 py-3 rounded-full shadow-xl transform hover:-translate-y-1 transition"
+        >
+          <PlusIcon className="h-6 w-6" />
+          <span className="font-semibold">Share Progress</span>
+        </button>
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6 pt-12">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
+        {posts.map((post) =>
+          post.postType === 0 ? (
+            <PostCard key={post.id} post={post} />
+          ) : (
+            <LP_PostCard key={post.id} post={post} />
+          )
+        )}
       </div>
 
       {showScrollButton && (
@@ -51,8 +67,14 @@ const PostsWall = () => {
         </button>
       )}
 
+      {/* Create Post Modal */}
       {showModal && (
         <CreatePostModal closeModal={() => setShowModal(false)} setPosts={setPosts} />
+      )}
+
+      {/* Create LP Post Modal */}
+      {showLPModal && (
+        <Create_LP_PostModal closeModal={() => setShowLPModal(false)} setPosts={setPosts} />
       )}
     </div>
   );
