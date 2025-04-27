@@ -14,7 +14,7 @@ import "yet-another-react-lightbox/styles.css"; // core CSS only
 import DeletePostModal from "./DeletePostModal"; // Import DeletePostModal
 import EditPostModal from "./EditPostModal"; // Import EditPostModal (new)
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, fetchPosts }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -219,6 +219,7 @@ const PostCard = ({ post }) => {
           postId={post.id}
           userId={currentUser.id}
           onClose={() => setShowDeleteModal(false)}
+          fetchPosts={fetchPosts} //
         />
       )}
 
@@ -228,6 +229,7 @@ const PostCard = ({ post }) => {
           postId={post.id}  // Pass only postId
           userId={currentUser.id}  // Pass currentUserId
           onClose={() => setShowEditModal(false)}
+          fetchPosts={fetchPosts} //
         />
       )}
     </div>

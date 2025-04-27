@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const DeletePostModal = ({ postId, userId, onClose }) => {
+const DeletePostModal = ({ postId, userId, onClose, fetchPosts }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,6 +26,8 @@ const DeletePostModal = ({ postId, userId, onClose }) => {
       if (!response.ok) {
         throw new Error("Failed to delete the post");
       }
+      
+      fetchPosts();// refresh the posts in the wall
       onClose(); // Close the modal after a successful delete
     } catch (error) {
       setError(error.message);

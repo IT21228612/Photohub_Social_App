@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import { XCircleIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
 
-const EditPostModal = ({ postId, userId, onClose }) => {
+const EditPostModal = ({ postId, userId, onClose, fetchPosts }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [title, setTitle] = useState("");
@@ -56,6 +56,16 @@ const EditPostModal = ({ postId, userId, onClose }) => {
     };
     fetchPostData();
   }, [postId, userId]);
+
+  
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      // Re-enable scrolling when modal is closed
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   // Handle new file selection
   const handleNewFileChange = (e) => {
@@ -126,7 +136,9 @@ const EditPostModal = ({ postId, userId, onClose }) => {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       Swal.fire("Success", "Post updated!", "success");
-      onClose();
+
+      fetchPosts();// refresh the posts in the wall
+      onClose();// close the modal
     } catch (e) {
       setError(e.message);
       Swal.fire("Error", "Could not update post.", "error");

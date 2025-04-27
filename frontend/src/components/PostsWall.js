@@ -16,8 +16,8 @@ const PostsWall = () => {
     axios
       .get(`${process.env.REACT_APP_API_URL}/posts/all`)
       .then((res) => {
-        // Sort posts by createdAt in descending order
-        const sortedPosts = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // Sort posts by updatedAt in descending order
+        const sortedPosts = res.data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setPosts(sortedPosts);
       })
       .catch(console.error);
@@ -30,6 +30,22 @@ const PostsWall = () => {
   }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const fetchPosts = () => {
+    axios
+      .get(`${process.env.REACT_APP_API_URL}/posts/all`)
+      .then((res) => {
+        const sortedPosts = res.data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setPosts(sortedPosts);
+        scrollToTop();
+      })
+      .catch(console.error);
+  };
+  
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+  
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -55,9 +71,9 @@ const PostsWall = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6 pt-12">
         {posts.map((post) =>
           post.postType === 0 ? (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} fetchPosts={fetchPosts} />
           ) : (
-            <LP_PostCard key={post.id} post={post} />
+            <LP_PostCard key={post.id} post={post} fetchPosts={fetchPosts} />
           )
         )}
       </div>
