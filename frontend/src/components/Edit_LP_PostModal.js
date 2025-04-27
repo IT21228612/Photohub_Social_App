@@ -10,13 +10,12 @@ const Edit_LP_PostModal = ({ postId, userId, onClose }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [skills, setSkills] = useState([]);
+  const [challenges, setChallenges] = useState("");
+  const [nextGoal, setNextGoal] = useState("");
+  const [postType, setPostType] = useState(1);
 
-  // Existing media on the server:
   const [existingMedia, setExistingMedia] = useState([]);
-  // Track which existing media to delete:
   const [toBeDeletedMediaIds, setToBeDeletedMediaIds] = useState([]);
-
-  // New uploads:
   const [newFiles, setNewFiles] = useState([]);
   const [newPreviews, setNewPreviews] = useState([]);
 
@@ -36,8 +35,10 @@ const Edit_LP_PostModal = ({ postId, userId, onClose }) => {
             ? data.skill.split(",").map((s) => ({ value: s, label: s }))
             : []
         );
+        setChallenges(data.challenges);
+        setNextGoal(data.nextGoal);
+        setPostType(data.postType);
 
-        // Build existing media array:
         const media = await Promise.all(
           (data.mediaIds || []).map(async (filename) => {
             const r = await fetch(
@@ -57,7 +58,6 @@ const Edit_LP_PostModal = ({ postId, userId, onClose }) => {
     fetchPostData();
   }, [postId, userId]);
 
-  // Handle new file selection
   const handleNewFileChange = (e) => {
     const files = Array.from(e.target.files);
     setNewFiles((prev) => [...prev, ...files]);
@@ -69,38 +69,50 @@ const Edit_LP_PostModal = ({ postId, userId, onClose }) => {
     setNewPreviews((prev) => [...prev, ...previews]);
   };
 
-  // Delete an existing media
   const deleteExistingMedia = (idx) => {
     const toDelete = existingMedia[idx].filename;
     setToBeDeletedMediaIds((prev) => [...prev, toDelete]);
     setExistingMedia((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Delete a newly added file
   const deleteNewFile = (idx) => {
     setNewFiles((prev) => prev.filter((_, i) => i !== idx));
     setNewPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleSave = async () => {
+
+      // Validation checks for empty fields
+      if (!title.trim()) {
+        Swal.fire("Validation", "Title is required.", "warning");
+        return;
+      }
+    
+      if (!description.trim()) {
+        Swal.fire("Validation", "Description is required.", "warning");
+        return;
+      }
+    
+      if (skills.length === 0) {
+        Swal.fire("Validation", "At least one skill must be selected.", "warning");
+        return;
+      }
+      
     setLoading(true);
     try {
       const form = new FormData();
       form.append("userId", userId);
       form.append("title", title);
       form.append("description", description);
-      form.append("postType", 0);
-      form.append(
-        "skill",
-        skills.map((s) => s.value).join(",")
-      );
+      form.append("postType", postType);
+      form.append("challenges", challenges);
+      form.append("nextGoal", nextGoal);
+      form.append("skill", skills.map((s) => s.value).join(","));
 
-      // Attach list of existing media filenames to delete
       toBeDeletedMediaIds.forEach((id) =>
         form.append("toBeDeletedMediaIds", id)
       );
 
-      // Attach new files
       newFiles.forEach((file) => form.append("newFiles", file));
 
       await axios.put(
@@ -179,6 +191,30 @@ const Edit_LP_PostModal = ({ postId, userId, onClose }) => {
                 onChange={setSkills}
                 className="text-sm"
                 placeholder="Select skills"
+              />
+            </div>
+
+            {/* Challenges */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Challenges</label>
+              <textarea
+                value={challenges}
+                onChange={(e) => setChallenges(e.target.value)}
+                rows={4}
+                className="w-full border rounded p-2 text-sm"
+                placeholder="Enter the challenges"
+              />
+            </div>
+
+            {/* Next Goal */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Next Goal</label>
+              <textarea
+                value={nextGoal}
+                onChange={(e) => setNextGoal(e.target.value)}
+                rows={4}
+                className="w-full border rounded p-2 text-sm"
+                placeholder="Enter the next goal"
               />
             </div>
 

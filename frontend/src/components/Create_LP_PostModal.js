@@ -95,6 +95,20 @@ const Create_LP_PostModal = ({ closeModal, setPosts }) => {
       return;
     }
 
+      // Check if the skills array is empty
+      if (skills.length === 0) {
+        Swal.fire("Validation", "You should select at least 1 skill.", "warning");
+        return; // Stop the form submission if skills are empty
+      }
+
+    // Check if the resources array is empty
+  if (resources.length === 0) {
+    Swal.fire("Validation", "You should enter at least 1 resource.", "warning");
+    return; // Stop the form submission if resources are empty
+  }
+
+  
+
     setIsLoading(true);
     const payload = new FormData();
     payload.append("userId", currentUser.id);
@@ -106,11 +120,11 @@ const Create_LP_PostModal = ({ closeModal, setPosts }) => {
     const concatenatedSkills = skills.map(skill => skill.value).join(","); // Join with commas
     payload.append("skill", concatenatedSkills); // Append the concatenated string
 
-    // Concatenate each resource's name, owner, and link into a single string, and wrap it in curly braces
+    // Concatenate each resource's name, owner, and link into a single string using plus symbol as delimiter
     const concatenatedResources = resources
-      .map(resource => `${resource.name}+${resource.owner}+${resource.link}`) ; // Wrap each string in curly braces
+      .map(resource => `${resource.name}+${resource.owner}+${resource.link}`) ; 
 
-    // Send the resources as a single array of strings
+    
     payload.append("resources", (concatenatedResources)); // Send the array 
     payload.append("challenges", challenges); // Append challenges
     payload.append("nextGoal", nextGoal); // Append next goal

@@ -15,7 +15,11 @@ const PostsWall = () => {
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_URL}/posts/all`)
-      .then((res) => setPosts(res.data))
+      .then((res) => {
+        // Sort posts by createdAt in descending order
+        const sortedPosts = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPosts(sortedPosts);
+      })
       .catch(console.error);
   }, []);
 

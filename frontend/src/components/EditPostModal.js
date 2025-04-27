@@ -83,6 +83,23 @@ const EditPostModal = ({ postId, userId, onClose }) => {
   };
 
   const handleSave = async () => {
+
+    // Validation checks for empty fields
+  if (!title.trim()) {
+    Swal.fire("Validation", "Title is required.", "warning");
+    return;
+  }
+
+  if (!description.trim()) {
+    Swal.fire("Validation", "Description is required.", "warning");
+    return;
+  }
+
+  if (skills.length === 0) {
+    Swal.fire("Validation", "At least one skill must be selected.", "warning");
+    return;
+  }
+
     setLoading(true);
     try {
       const form = new FormData();

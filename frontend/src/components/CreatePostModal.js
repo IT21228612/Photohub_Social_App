@@ -76,6 +76,12 @@ const CreatePostModal = ({ closeModal, setPosts }) => {
       return;
     }
 
+    // Check if the skills array is empty
+    if (skills.length === 0) {
+      Swal.fire("Validation", "You should select at least 1 skill.", "warning");
+      return; // Stop the form submission if skills are empty
+    }
+
     setIsLoading(true);
     const payload = new FormData();
     payload.append("userId", currentUser.id);

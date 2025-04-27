@@ -1,8 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const DeletePostModal = ({ postId, userId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    
+    // Cleanup: Re-enable scrolling when modal is closed
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const handleDelete = async () => {
     setLoading(true);
@@ -16,8 +26,7 @@ const DeletePostModal = ({ postId, userId, onClose }) => {
       if (!response.ok) {
         throw new Error("Failed to delete the post");
       }
-      // Assuming a successful delete, we can close the modal
-      onClose();
+      onClose(); // Close the modal after a successful delete
     } catch (error) {
       setError(error.message);
     } finally {
@@ -26,8 +35,8 @@ const DeletePostModal = ({ postId, userId, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg p-6 shadow-lg w-96 relative z-60">
         <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
         <p className="text-gray-700 mb-4">
           Are you sure you want to delete this post? This action cannot be
