@@ -11,11 +11,13 @@ import Lightbox from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
+import DeletePostModal from "./DeletePostModal"; // Import your modal here
 
 const LP_PostCard = ({ post }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // <-- New
 
   const ProfilePic = UserCircleIcon;
   const currentUser = {
@@ -24,7 +26,6 @@ const LP_PostCard = ({ post }) => {
     email: "john@example.com",
   };
 
-  // Check if the URL is a video
   const isVideoFile = (url) => url.match(/\.(mp4|mov|avi|webm)$/i);
 
   const slides = (post.mediaIds || []).map((mediaId) => {
@@ -61,7 +62,6 @@ const LP_PostCard = ({ post }) => {
               muted
               preload="metadata"
             />
-            {/* Play Icon Overlay */}
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
               <PlayIcon className="h-12 w-12 text-white" />
             </div>
@@ -77,49 +77,70 @@ const LP_PostCard = ({ post }) => {
     );
   };
 
-  // Split the skill string into an array and render each skill as a tag
   const skillArray = post.skill ? post.skill.split(",") : [];
 
-  // Render Resources as a list of clickable links
   const renderResources = (resources) => {
     return (
       <div className="mb-2">
         <div className="font-semibold text-gray-800">Resources</div>
-        <ul className="list-disc pl-5 text-gray-700">
-          {resources.map((resource, idx) => (
-            <li key={idx}>
-              <a href={resource} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                {resource}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <table className="min-w-full table-auto border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="py-2 px-4 text-left text-xs">Name</th>
+              <th className="py-2 px-4 text-left text-xs">Owner</th>
+              <th className="py-2 px-4 text-left text-xs">Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {resources.map((resource, idx) => {
+              const [name, owner, link] = resource.split("+");
+              return (
+                <tr key={idx} className="border-b hover:bg-gray-50">
+                  <td className="py-2 px-4 text-xs">{name}</td>
+                  <td className="py-2 px-4 text-xs">{owner}</td>
+                  <td className="py-2 px-4 text-xs">
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {link}
+                    </a>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     );
   };
 
-  // Render Challenges faced
   const renderChallenges = (challenges) => {
     return (
       <div className="mb-2">
         <div className="font-semibold text-gray-800">Challenges Faced</div>
-        <p className="text-gray-700">{challenges}</p>
+        <p className="text-gray-700 text-sm" style={{ whiteSpace: "pre-wrap" }}>
+          {challenges}
+        </p>
       </div>
     );
   };
 
-  // Render Next Goal
   const renderNextGoal = (nextGoal) => {
     return (
       <div className="mb-2">
         <div className="font-semibold text-gray-800">Next Learning Goal</div>
-        <p className="text-gray-700">{nextGoal}</p>
+        <p className="text-gray-700 text-sm" style={{ whiteSpace: "pre-wrap" }}>
+          {nextGoal}
+        </p>
       </div>
     );
   };
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden ">
+    <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
       {currentUser.id === post.userId && (
         <Popover className="absolute top-2 right-2">
           <Popover.Button className="rounded-full hover:bg-gray-100 focus:outline-none">
@@ -129,7 +150,10 @@ const LP_PostCard = ({ post }) => {
             <button className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100">
               <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
             </button>
-            <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+            <button
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              onClick={() => setShowDeleteModal(true)} // <-- open delete modal
+            >
               <TrashIcon className="h-5 w-5 text-red-600" /> Delete
             </button>
           </Popover.Panel>
@@ -147,12 +171,10 @@ const LP_PostCard = ({ post }) => {
           </div>
         </div>
 
-        {/* Title */}
         <div className="text-gray-800 text-lg font-semibold mb-2">
           {post.title}
         </div>
 
-        {/* Skills as tags */}
         {skillArray.length > 0 && (
           <div className="mb-2">
             <div className="flex flex-wrap gap-2">
@@ -168,15 +190,13 @@ const LP_PostCard = ({ post }) => {
           </div>
         )}
 
-        {/* Description (Smaller text and preserving spaces/line breaks) */}
         <div
           className={`text-gray-800 text-sm mb-2 ${!isExpanded ? "line-clamp-5" : ""}`}
-          style={{ whiteSpace: "pre-wrap" }} // This ensures that line breaks and spaces are preserved
+          style={{ whiteSpace: "pre-wrap" }}
         >
           {post.description}
         </div>
 
-        {/* Toggle See More / Show Less */}
         {post.description.length > 100 && (
           <div className="text-left">
             <button
@@ -188,20 +208,16 @@ const LP_PostCard = ({ post }) => {
           </div>
         )}
 
-        {/* Resources Section */}
         {post.resources && post.resources.length > 0 && renderResources(post.resources)}
-
-        {/* Challenges Section */}
         {post.challenges && renderChallenges(post.challenges)}
-
-        {/* Next Goal Section */}
         {post.nextGoal && renderNextGoal(post.nextGoal)}
 
-        {/* Media (Images/Videos) */}
         {post.mediaIds && post.mediaIds.length > 0 && (
           <div className="grid gap-2 mb-2">
             <div
-              className={`grid gap-2 ${post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
+              className={`grid gap-2 ${
+                post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"
+              }`}
             >
               {post.mediaIds.slice(0, 4).map((id, i) => (
                 <div
@@ -239,6 +255,14 @@ const LP_PostCard = ({ post }) => {
             scrollToZoom: true,
           }}
           styles={{ container: { backgroundColor: "rgba(0,0,0,0.9)" } }}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeletePostModal
+          postId={post.id}
+          userId={currentUser.id}
+          onClose={() => setShowDeleteModal(false)}
         />
       )}
     </div>

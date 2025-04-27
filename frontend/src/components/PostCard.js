@@ -11,15 +11,17 @@ import Lightbox from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css"; // core CSS only
+import DeletePostModal from "./DeletePostModal"; // Import DeletePostModal component
 
 const PostCard = ({ post }) => {
   const [openViewer, setOpenViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for showing delete modal
 
   const ProfilePic = UserCircleIcon;
   const currentUser = {
-    id: "user123",
+    id: "user123", // This should be dynamically passed or from context
     name: "John Doe",
     email: "john@example.com",
   };
@@ -77,7 +79,6 @@ const PostCard = ({ post }) => {
     );
   };
 
-  // Split the skill string into an array and render each skill as a tag
   const skillArray = post.skill ? post.skill.split(",") : [];
 
   return (
@@ -91,7 +92,10 @@ const PostCard = ({ post }) => {
             <button className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100">
               <PencilIcon className="h-5 w-5 text-gray-500" /> Edit
             </button>
-            <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+            <button
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              onClick={() => setShowDeleteModal(true)} // Show delete modal when clicked
+            >
               <TrashIcon className="h-5 w-5 text-red-600" /> Delete
             </button>
           </Popover.Panel>
@@ -153,9 +157,7 @@ const PostCard = ({ post }) => {
         {post.mediaIds && post.mediaIds.length > 0 && (
           <div className="grid gap-2 mb-2">
             <div
-              className={`grid gap-2 ${
-                post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              }`}
+              className={`grid gap-2 ${post.mediaIds.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
             >
               {post.mediaIds.slice(0, 4).map((id, i) => (
                 <div
@@ -193,6 +195,15 @@ const PostCard = ({ post }) => {
             scrollToZoom: true,
           }}
           styles={{ container: { backgroundColor: "rgba(0,0,0,0.9)" } }}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <DeletePostModal
+          postId={post.id}
+          userId={currentUser.id}
+          onClose={() => setShowDeleteModal(false)}
         />
       )}
     </div>
